@@ -1,5 +1,5 @@
 import React from "react";
-import { useSpring, animated, config } from "react-spring";
+import { useSpring, animated } from "react-spring";
 import attack from "./images/attack.png";
 import defend from "./images/defend.png";
 
@@ -86,6 +86,9 @@ export default class Counter extends React.Component {
       highScore: language === "tr" ? "En Yüksek Skor:" : "High Score:",
       youWon: language === "tr" ? "Kazandınız!!" : "You Won!!",
       youLost: language === "tr" ? "Kaybettiniz!!" : "You Lost!!",
+      easy: language === "tr" ? "Kolay" : "Easy",
+      normal: language === "tr" ? "Normal" : "Normal",
+      hard: language === "tr" ? "Zor" : "Hard",
     };
 
     const translatedLastPlay = this.state.lastPlay === "Attack" ? texts.attack : 
@@ -94,7 +97,7 @@ export default class Counter extends React.Component {
 
     return (
       <div className="row text-white text-center">
-        <AnimatedScore score={this.state.count} />
+        <AnimatedScore score={this.state.count} gameScoreText={texts.gameScore} />
         <p>{texts.lastPlay} {translatedLastPlay}</p>
         <AnimatedGameStatus status={this.state.gameStatus === "You Won!!" ? texts.youWon : 
                                     this.state.gameStatus === "You Lost!!" ? texts.youLost : 
@@ -130,9 +133,9 @@ export default class Counter extends React.Component {
           </button>
         </div>
         <div className="col-12 mt-3">
-          <button onClick={() => this.changeDifficulty("easy")} className="btn btn-success mx-2">Kolay</button>
-          <button onClick={() => this.changeDifficulty("normal")} className="btn btn-warning mx-2">Normal</button>
-          <button onClick={() => this.changeDifficulty("hard")} className="btn btn-danger mx-2">Zor</button>
+          <button onClick={() => this.changeDifficulty("easy")} className="btn btn-success mx-2">{texts.easy}</button>
+          <button onClick={() => this.changeDifficulty("normal")} className="btn btn-warning mx-2">{texts.normal}</button>
+          <button onClick={() => this.changeDifficulty("hard")} className="btn btn-danger mx-2">{texts.hard}</button>
         </div>
         <div className="col-12 mt-3">
           <button onClick={() => this.changeLanguage("tr")} className="btn btn-info mx-2">Türkçe</button>
@@ -144,9 +147,9 @@ export default class Counter extends React.Component {
 }
 
 // Animasyonlu bileşenler
-const AnimatedScore = ({ score }) => {
+const AnimatedScore = ({ score, gameScoreText }) => {
   const props = useSpring({ number: score, from: { number: 0 } });
-  return <animated.h1>{props.number.to(n => `Oyun Skoru: ${n.toFixed(0)}`)}</animated.h1>;
+  return <animated.h1>{props.number.to(n => `${gameScoreText} ${n.toFixed(0)}`)}</animated.h1>;
 };
 
 const AnimatedGameStatus = ({ status }) => {
@@ -155,40 +158,20 @@ const AnimatedGameStatus = ({ status }) => {
 };
 
 const AnimatedImage = ({ src, onClick, borderColor }) => {
-  const [props, set] = useSpring(() => ({
-    scale: 1,
-    boxShadow: "0px 0px 0px rgba(0,0,0,0)",
-    config: config.wobbly
-  }));
-
+  const [props, set] = useSpring(() => ({ scale: 1 }));
   return (
-    <animated.div
+    <animated.img
       style={{
         width: "100%",
-        padding: "4px",
-        borderRadius: "8px",
         cursor: "pointer",
+        border: `1px solid ${borderColor}`,
         ...props,
       }}
-      onMouseEnter={() => set({ 
-        scale: 1.05, 
-        boxShadow: `0px 5px 15px rgba(0,0,0,0.3)` 
-      })}
-      onMouseLeave={() => set({ 
-        scale: 1, 
-        boxShadow: "0px 0px 0px rgba(0,0,0,0)" 
-      })}
-    >
-      <img
-        style={{
-          width: "100%",
-          border: `2px solid ${borderColor}`,
-          borderRadius: "8px",
-        }}
-        src={src}
-        onClick={onClick}
-        alt={src === attack ? "Saldırı" : "Savunma"}
-      />
-    </animated.div>
+      className="p-4 rounded"
+      src={src}
+      onClick={onClick}
+      onMouseEnter={() => set({ scale: 1.1 })}
+      onMouseLeave={() => set({ scale: 1 })}
+    />
   );
 };
