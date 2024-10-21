@@ -1,4 +1,5 @@
 import React from "react";
+import { useSpring, animated, config } from "react-spring";
 import attack from "./images/attack.png";
 import defend from "./images/defend.png";
 
@@ -93,34 +94,24 @@ export default class Counter extends React.Component {
 
     return (
       <div className="row text-white text-center">
-        <h1>{texts.gameScore} {this.state.count}</h1>
+        <AnimatedScore score={this.state.count} />
         <p>{texts.lastPlay} {translatedLastPlay}</p>
-        <h3>{texts.gameStatus} {this.state.gameStatus === "You Won!!" ? texts.youWon : 
-                                this.state.gameStatus === "You Lost!!" ? texts.youLost : 
-                                this.state.gameStatus}</h3>
+        <AnimatedGameStatus status={this.state.gameStatus === "You Won!!" ? texts.youWon : 
+                                    this.state.gameStatus === "You Lost!!" ? texts.youLost : 
+                                    this.state.gameStatus} />
         <h4>{texts.highScore} {this.state.highScore}</h4>
         <div className="col-6 col-md-3 offset-md-3">
-          <img
-            style={{
-              width: "100%",
-              cursor: "pointer",
-              border: "1px solid green",
-            }}
-            className="p-4 rounded"
+          <AnimatedImage
             src={attack}
             onClick={this.handleAttack}
+            borderColor="green"
           />
         </div>
         <div className="col-6 col-md-3 ">
-          <img
-            style={{
-              width: "100%",
-              cursor: "pointer",
-              border: "1px solid red",
-            }}
-            className="p-4 rounded"
+          <AnimatedImage
             src={defend}
             onClick={this.handleDefence}
+            borderColor="red"
           />
         </div>
         <div className="col-12 col-md-4 offset-md-4">
@@ -151,3 +142,53 @@ export default class Counter extends React.Component {
     );
   }
 }
+
+// Animasyonlu bileşenler
+const AnimatedScore = ({ score }) => {
+  const props = useSpring({ number: score, from: { number: 0 } });
+  return <animated.h1>{props.number.to(n => `Oyun Skoru: ${n.toFixed(0)}`)}</animated.h1>;
+};
+
+const AnimatedGameStatus = ({ status }) => {
+  const props = useSpring({ opacity: 1, from: { opacity: 0 } });
+  return <animated.h3 style={props}>{status}</animated.h3>;
+};
+
+const AnimatedImage = ({ src, onClick, borderColor }) => {
+  const [props, set] = useSpring(() => ({
+    scale: 1,
+    boxShadow: "0px 0px 0px rgba(0,0,0,0)",
+    config: config.wobbly
+  }));
+
+  return (
+    <animated.div
+      style={{
+        width: "100%",
+        padding: "4px",
+        borderRadius: "8px",
+        cursor: "pointer",
+        ...props,
+      }}
+      onMouseEnter={() => set({ 
+        scale: 1.05, 
+        boxShadow: `0px 5px 15px rgba(0,0,0,0.3)` 
+      })}
+      onMouseLeave={() => set({ 
+        scale: 1, 
+        boxShadow: "0px 0px 0px rgba(0,0,0,0)" 
+      })}
+    >
+      <img
+        style={{
+          width: "100%",
+          border: `2px solid ${borderColor}`,
+          borderRadius: "8px",
+        }}
+        src={src}
+        onClick={onClick}
+        alt={src === attack ? "Saldırı" : "Savunma"}
+      />
+    </animated.div>
+  );
+};
